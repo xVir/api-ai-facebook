@@ -14,6 +14,49 @@ const FB_PAGE_ACCESS_TOKEN = process.env.FB_PAGE_ACCESS_TOKEN;
 const apiAiService = apiai(APIAI_ACCESS_TOKEN, "deprecated", {});
 const sessionIds = new Map();
 
+function processEvent(event) {
+    var sender = event.sender.id;
+
+    if (event.message && event.message.text) {
+        var text = event.message.text;
+        // Handle a text message from this sender
+
+        if (!sessionIds.has(sender)) {
+            sessionIds.set(sender, uuid.v1());
+        }
+
+        console.log("Text", text);
+
+        let apiaiRequest = apiAiService.textRequest(text,
+            {
+                sessionId: sessionIds.get(sender)
+            });
+
+        apiaiRequest.on('response', (response) => {
+            if (isDefined(response.result)) {
+                let responseText = response.result.fulfillment.speech;
+                let responseData = response.result.data;
+                let action = response.result.action;
+
+                if (isDefined(responseData)) {
+                    try {
+                        let responseObject = JSON.parse(responseData);
+                        sendFBMessage(sender, responseObject.facebook);
+                    } catch (err) {
+                        sendFBMessage(sender, err.message);
+                    }
+                } else if (isDefined(responseText)) {
+                    sendFBMessage(sender, {text: responseText});
+                }
+
+            }
+        });
+
+        apiaiRequest.on('error', (error) => console.error(error));
+        apiaiRequest.end();
+    }
+}
+
 function sendFBMessage(sender, messageData) {
     request({
         url: 'https://graph.facebook.com/v2.6/me/messages',
@@ -60,56 +103,23 @@ app.get('/webhook/', function (req, res) {
     }
 });
 
-function processEvent(event) {
-    var sender = event.sender.id;
-
-    if (event.message && event.message.text) {
-        var text = event.message.text;
-        // Handle a text message from this sender
-
-        if (!sessionIds.has(sender)) {
-            sessionIds.set(sender, uuid.v1());
-        }
-
-        console.log("Text", text);
-
-        let apiaiRequest = apiAiService.textRequest(text,
-            {
-                sessionId: sessionIds.get(sender)
-            });
-
-        apiaiRequest.on('response', (response) => {
-            if (isDefined(response.result)) {
-                let responseText = response.result.fulfillment.speech;
-                let responseData = response.result.data;
-                let action = response.result.action;
-
-                if (isDefined(responseData)) {
-                    try {
-                        let responseObject = JSON.parse(responseData);
-                        sendFBMessage(sender, responseObject.facebook);
-                    } catch (err) {
-                        sendFBMessage(sender, err.message);
-                    }
-                } else if (isDefined(responseText)) {
-                    sendFBMessage(sender, {text: responseText});
-                }
-
-            }
-        });
-
-        apiaiRequest.on('error', (error) => console.error(error));
-        apiaiRequest.end();
-    }
-}
-
 app.post('/webhook/', function (req, res) {
-    var messaging_events = req.body.entry[0].messaging;
-    for (var i = 0; i < messaging_events.length; i++) {
-        var event = req.body.entry[0].messaging[i];
-        processEvent(event);
+    try{
+        var messaging_events = req.body.entry[0].messaging;
+        for (var i = 0; i < messaging_events.length; i++) {
+            var event = req.body.entry[0].messaging[i];
+            processEvent(event);
+        }
+        return res.status(200).json({
+            status: "ok"
+        });
+    } catch (err) {
+        return res.status(400).json({
+            status: "error",
+            error: err
+        });
     }
-    res.sendStatus(200);
+
 });
 
 app.listen(REST_PORT, function () {
