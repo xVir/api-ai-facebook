@@ -3,7 +3,7 @@
   "description": "Api.ai Facebook integration allows you to create Facebook bots with natural language understanding based on Api.ai technology.",
   "repository": "https://github.com/xVir/api-ai-slack-bot",
   "logo": "http://xvir.github.io/img/apiai.png",
-  "keywords": ["api.ai", "slack", "natural language"],
+  "keywords": ["api.ai", "facebook", "natural language"],
   "env": {
     "APIAI_ACCESS_TOKEN": {
       "description": "Client access token for Api.ai",
@@ -19,6 +19,6 @@
     }
   },
   "engines": {
-    "node": "5.9.0"
+    "node": "5.10.1"
   }
 }
