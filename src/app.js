@@ -11,7 +11,7 @@ const APIAI_ACCESS_TOKEN = process.env.APIAI_ACCESS_TOKEN;
 const FB_VERIFY_TOKEN = process.env.FB_VERIFY_TOKEN;
 const FB_PAGE_ACCESS_TOKEN = process.env.FB_PAGE_ACCESS_TOKEN;
 
-const apiAiService = apiai(APIAI_ACCESS_TOKEN, "deprecated", {hostname: "dev.api.ai", path: "/api/query"});
+const apiAiService = apiai(APIAI_ACCESS_TOKEN, "deprecated", {hostname: "dev.api.ai", endpoint: "/api/"});
 const sessionIds = new Map();
 
 function processEvent(event) {
