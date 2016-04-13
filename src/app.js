@@ -125,3 +125,16 @@ app.post('/webhook/', function (req, res) {
 app.listen(REST_PORT, function () {
     console.log('Rest service ready on port ' + REST_PORT);
 });
+
+// making subscribe post request
+request({
+        method: 'POST',
+        uri: "https://graph.facebook.com/v2.6/me/subscribed_apps?access_token=" + FB_PAGE_ACCESS_TOKEN
+    },
+    function (error, response, body) {
+        if (error) {
+            console.error('Error while subscription: ', error);
+        } else {
+            console.log('Subscription result: ', response.body);
+        }
+    });
