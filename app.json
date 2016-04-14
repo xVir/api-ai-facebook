@@ -16,6 +16,10 @@
     "FB_PAGE_ACCESS_TOKEN": {
       "description": "Page Access Token",
       "value": ""
+    },
+    "APIAI_LANG": {
+      "description": "Agent language",
+      "value": ""
     }
   },
   "engines": {

@@ -8,10 +8,11 @@ const request = require('request');
 
 const REST_PORT = (process.env.PORT || 5000);
 const APIAI_ACCESS_TOKEN = process.env.APIAI_ACCESS_TOKEN;
+const APIAI_LANG = process.env.APIAI_LANG || 'en';
 const FB_VERIFY_TOKEN = process.env.FB_VERIFY_TOKEN;
 const FB_PAGE_ACCESS_TOKEN = process.env.FB_PAGE_ACCESS_TOKEN;
 
-const apiAiService = apiai(APIAI_ACCESS_TOKEN, "deprecated", {});
+const apiAiService = apiai(APIAI_ACCESS_TOKEN, "deprecated", {language: APIAI_LANG});
 const sessionIds = new Map();
 
 function processEvent(event) {
@@ -104,7 +105,7 @@ app.get('/webhook/', function (req, res) {
 });
 
 app.post('/webhook/', function (req, res) {
-    try{
+    try {
         var messaging_events = req.body.entry[0].messaging;
         for (var i = 0; i < messaging_events.length; i++) {
             var event = req.body.entry[0].messaging[i];
