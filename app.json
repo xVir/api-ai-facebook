@@ -19,7 +19,8 @@
     },
     "APIAI_LANG": {
       "description": "Agent language",
-      "value": ""
+      "value": "",
+      "required": false
     }
   },
   "engines": {
