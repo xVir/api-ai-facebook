@@ -76,6 +76,20 @@ function sendFBMessage(sender, messageData) {
     });
 }
 
+function doSubscribeRequest() {
+    request({
+            method: 'POST',
+            uri: "https://graph.facebook.com/v2.6/me/subscribed_apps?access_token=" + FB_PAGE_ACCESS_TOKEN
+        },
+        function (error, response, body) {
+            if (error) {
+                console.error('Error while subscription: ', error);
+            } else {
+                console.log('Subscription result: ', response.body);
+            }
+        });
+}
+
 function isDefined(obj) {
     if (typeof obj == 'undefined') {
         return false;
@@ -99,6 +113,10 @@ app.all('*', function (req, res, next) {
 app.get('/webhook/', function (req, res) {
     if (req.query['hub.verify_token'] == FB_VERIFY_TOKEN) {
         res.send(req.query['hub.challenge']);
+        
+        setTimeout(function () {
+            doSubscribeRequest();
+        }, 3000);
     } else {
         res.send('Error, wrong validation token');
     }
@@ -127,15 +145,4 @@ app.listen(REST_PORT, function () {
     console.log('Rest service ready on port ' + REST_PORT);
 });
 
-// making subscribe post request
-request({
-        method: 'POST',
-        uri: "https://graph.facebook.com/v2.6/me/subscribed_apps?access_token=" + FB_PAGE_ACCESS_TOKEN
-    },
-    function (error, response, body) {
-        if (error) {
-            console.error('Error while subscription: ', error);
-        } else {
-            console.log('Subscription result: ', response.body);
-        }
-    });
+doSubscribeRequest();
