@@ -12,5 +12,5 @@ docker run -it --name fb_bot \
            -e APIAI_ACCESS_TOKEN="API.AI client access token" \
            -e FB_PAGE_ACCESS_TOKEN="Facebook Page Access Token" \
            -e FB_VERIFY_TOKEN="Facebook Verify Token" \
-           api-ai/api-ai-facebook
+           xvir/api-ai-facebook
 ```
