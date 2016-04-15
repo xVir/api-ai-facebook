@@ -39,12 +39,11 @@ function processEvent(event) {
                 let responseData = response.result.data;
                 let action = response.result.action;
 
-                if (isDefined(responseData)) {
+                if (isDefined(responseData) && isDefined(responseData.facebook)) {
                     try {
-                        let responseObject = JSON.parse(responseData);
-                        sendFBMessage(sender, responseObject.facebook);
+                        sendFBMessage(sender, responseData.facebook);
                     } catch (err) {
-                        sendFBMessage(sender, err.message);
+                        sendFBMessage(sender, {text: err.message });
                     }
                 } else if (isDefined(responseText)) {
                     sendFBMessage(sender, {text: responseText});
