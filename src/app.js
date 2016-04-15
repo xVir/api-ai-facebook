@@ -41,11 +41,13 @@ function processEvent(event) {
 
                 if (isDefined(responseData) && isDefined(responseData.facebook)) {
                     try {
+                        console.log('Response as formatted message');
                         sendFBMessage(sender, responseData.facebook);
                     } catch (err) {
                         sendFBMessage(sender, {text: err.message });
                     }
                 } else if (isDefined(responseText)) {
+                    console.log('Response as text message');
                     sendFBMessage(sender, {text: responseText});
                 }
 
