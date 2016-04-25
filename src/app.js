@@ -48,7 +48,13 @@ function processEvent(event) {
                     }
                 } else if (isDefined(responseText)) {
                     console.log('Response as text message');
-                    sendFBMessage(sender, {text: responseText});
+                    // facebook API limit for text length is 320,
+                    // so we split message if needed
+                    var splittedText = splitResponse(responseText);
+
+                    for (var i = 0; i < splittedText.length; i++) {
+                        sendFBMessage(sender, {text: splittedText[i]});
+                    }
                 }
 
             }
@@ -57,6 +63,49 @@ function processEvent(event) {
         apiaiRequest.on('error', (error) => console.error(error));
         apiaiRequest.end();
     }
+}
+
+function splitResponse(str) {
+    if (str.length <= 320)
+    {
+        return [str];
+    }
+
+    var result = chunkString(str, 300);
+
+    return result;
+
+}
+
+function chunkString(s, len)
+{
+    var curr = len, prev = 0;
+
+    var output = [];
+
+    while(s[curr]) {
+        if(s[curr++] == ' ') {
+            output.push(s.substring(prev,curr));
+            prev = curr;
+            curr += len;
+        }
+        else
+        {
+            var currReverse = curr;
+            do {
+                if(s.substring(currReverse - 1, currReverse) == ' ')
+                {
+                    output.push(s.substring(prev,currReverse));
+                    prev = currReverse;
+                    curr = currReverse + len;
+                    break;
+                }
+                currReverse--;
+            } while(currReverse > prev)
+        }
+    }
+    output.push(s.substr(prev));
+    return output;
 }
 
 function sendFBMessage(sender, messageData) {
