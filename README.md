@@ -12,5 +12,24 @@ docker run -it --name fb_bot \
            -e APIAI_ACCESS_TOKEN="API.AI client access token" \
            -e FB_PAGE_ACCESS_TOKEN="Facebook Page Access Token" \
            -e FB_VERIFY_TOKEN="Facebook Verify Token" \
+           -e APIAI_LANG="en" \
            xvir/api-ai-facebook
 ```
+
+## Note about languages:
+When you deploy the app manually to Heroku, the APIAI_LANG not filled with a value.
+You need to provide language parameter according to your agent settings in the form of two-letters code.
+ 
+ * "en"
+ * "ru"
+ * "de"
+ * "pt"
+ * "pt-BR"
+ * "es"
+ * "fr"
+ * "it"
+ * "ja"
+ * "ko"
+ * "zh-CN"
+ * "zh-HK"
+ * "zh-TW"
