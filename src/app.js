@@ -5,6 +5,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const uuid = require('node-uuid');
 const request = require('request');
+const JSONbig = require('json-bigint');
 
 const REST_PORT = (process.env.PORT || 5000);
 const APIAI_ACCESS_TOKEN = process.env.APIAI_ACCESS_TOKEN;
@@ -12,11 +13,11 @@ const APIAI_LANG = process.env.APIAI_LANG || 'en';
 const FB_VERIFY_TOKEN = process.env.FB_VERIFY_TOKEN;
 const FB_PAGE_ACCESS_TOKEN = process.env.FB_PAGE_ACCESS_TOKEN;
 
-const apiAiService = apiai(APIAI_ACCESS_TOKEN, {language: APIAI_LANG});
+const apiAiService = apiai(APIAI_ACCESS_TOKEN, {language: APIAI_LANG, requestSource: "fb"});
 const sessionIds = new Map();
 
 function processEvent(event) {
-    var sender = event.sender.id;
+    var sender = event.sender.id.toString();
 
     if (event.message && event.message.text) {
         var text = event.message.text;
@@ -48,7 +49,13 @@ function processEvent(event) {
                     }
                 } else if (isDefined(responseText)) {
                     console.log('Response as text message');
-                    sendFBMessage(sender, {text: responseText});
+                    // facebook API limit for text length is 320,
+                    // so we split message if needed
+                    var splittedText = splitResponse(responseText);
+
+                    for (var i = 0; i < splittedText.length; i++) {
+                        sendFBMessage(sender, {text: splittedText[i]});
+                    }
                 }
 
             }
@@ -57,6 +64,49 @@ function processEvent(event) {
         apiaiRequest.on('error', (error) => console.error(error));
         apiaiRequest.end();
     }
+}
+
+function splitResponse(str) {
+    if (str.length <= 320)
+    {
+        return [str];
+    }
+
+    var result = chunkString(str, 300);
+
+    return result;
+
+}
+
+function chunkString(s, len)
+{
+    var curr = len, prev = 0;
+
+    var output = [];
+
+    while(s[curr]) {
+        if(s[curr++] == ' ') {
+            output.push(s.substring(prev,curr));
+            prev = curr;
+            curr += len;
+        }
+        else
+        {
+            var currReverse = curr;
+            do {
+                if(s.substring(currReverse - 1, currReverse) == ' ')
+                {
+                    output.push(s.substring(prev,currReverse));
+                    prev = currReverse;
+                    curr = currReverse + len;
+                    break;
+                }
+                currReverse--;
+            } while(currReverse > prev)
+        }
+    }
+    output.push(s.substr(prev));
+    return output;
 }
 
 function sendFBMessage(sender, messageData) {
@@ -104,12 +154,8 @@ function isDefined(obj) {
 }
 
 const app = express();
-app.use(bodyParser.json());
-app.all('*', function (req, res, next) {
-    // res.header("Access-Control-Allow-Origin", '*');
-    // res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, content-type, accept");
-    next();
-});
+
+app.use(bodyParser.text({ type: 'application/json' }));
 
 app.get('/webhook/', function (req, res) {
     if (req.query['hub.verify_token'] == FB_VERIFY_TOKEN) {
@@ -125,9 +171,11 @@ app.get('/webhook/', function (req, res) {
 
 app.post('/webhook/', function (req, res) {
     try {
-        var messaging_events = req.body.entry[0].messaging;
+        var data = JSONbig.parse(req.body);
+
+        var messaging_events = data.entry[0].messaging;
         for (var i = 0; i < messaging_events.length; i++) {
-            var event = req.body.entry[0].messaging[i];
+            var event = data.entry[0].messaging[i];
             processEvent(event);
         }
         return res.status(200).json({
