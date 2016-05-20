@@ -6,6 +6,7 @@ const bodyParser = require('body-parser');
 const uuid = require('node-uuid');
 const request = require('request');
 const JSONbig = require('json-bigint');
+const async = require('async');
 
 const REST_PORT = (process.env.PORT || 5000);
 const APIAI_ACCESS_TOKEN = process.env.APIAI_ACCESS_TOKEN;
@@ -53,9 +54,9 @@ function processEvent(event) {
                     // so we split message if needed
                     var splittedText = splitResponse(responseText);
 
-                    for (var i = 0; i < splittedText.length; i++) {
-                        sendFBMessage(sender, {text: splittedText[i]});
-                    }
+                    async.eachSeries(splittedText, (textPart, callback) => {
+                        sendFBMessage(sender, {text: textPart}, callback);
+                    });
                 }
 
             }
@@ -109,7 +110,7 @@ function chunkString(s, len)
     return output;
 }
 
-function sendFBMessage(sender, messageData) {
+function sendFBMessage(sender, messageData, callback) {
     request({
         url: 'https://graph.facebook.com/v2.6/me/messages',
         qs: {access_token: FB_PAGE_ACCESS_TOKEN},
@@ -123,6 +124,10 @@ function sendFBMessage(sender, messageData) {
             console.log('Error sending message: ', error);
         } else if (response.body.error) {
             console.log('Error: ', response.body.error);
+        }
+
+        if (callback) {
+            callback();
         }
     });
 }
