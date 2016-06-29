@@ -21,7 +21,7 @@ function processEvent(event) {
     var sender = event.sender.id.toString();
 
     if ((event.message && event.message.text) || (event.postback && event.postback.payload)) {
-        var text = event.message.text || event.postback.payload;
+        var text = event.message ? event.message.text : event.postback.payload;
         // Handle a text message from this sender
 
         if (!sessionIds.has(sender)) {
