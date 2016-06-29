@@ -20,6 +20,9 @@ const sessionIds = new Map();
 function processEvent(event) {
     var sender = event.sender.id.toString();
 
+    if (event.postback) {
+        console.log('postback!');
+    }
     if (event.message && event.message.text) {
         var text = event.message.text;
         // Handle a text message from this sender
