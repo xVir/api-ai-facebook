@@ -22,7 +22,7 @@ function processEvent(event) {
 
     if (event.postback) {
         console.log('postback!');
-        console.log(event.message);
+        console.log(event.postback.payload);
     }
     if (event.message && event.message.text) {
         var text = event.message.text;
