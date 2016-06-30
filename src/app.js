@@ -42,11 +42,22 @@ function processEvent(event) {
                 let action = response.result.action;
 
                 if (isDefined(responseData) && isDefined(responseData.facebook)) {
-                    try {
-                        console.log('Response as formatted message');
-                        sendFBMessage(sender, responseData.facebook);
-                    } catch (err) {
-                        sendFBMessage(sender, {text: err.message });
+                    if(!Array.isArray(responseData.facebook)) {
+                        try {
+                            console.log('Response as formatted message');
+                            sendFBMessage(sender, responseData.facebook);
+                        } catch (err) {
+                            sendFBMessage(sender, {text: err.message });
+                        }
+                    } else {
+                        responseData.facebook.forEach(function(facebookMessage) {
+                            try {
+                                console.log('Response as formatted message');
+                                sendFBMessage(sender, facebookMessage);
+                            } catch (err) {
+                                sendFBMessage(sender, {text: err.message });
+                            }                        
+                        });
                     }
                 } else if (isDefined(responseText)) {
                     console.log('Response as text message');
@@ -163,6 +174,43 @@ const app = express();
 app.use(bodyParser.text({ type: 'application/json' }));
 
 app.get('/webhook/', function (req, res) {
+    if (req.query['hub.verify_token'] == FB_VERIFY_TOKEN) {
+        res.send(req.query['hub.challenge']);
+        
+        setTimeout(function () {
+            doSubscribeRequest();
+        }, 3000);
+    } else {
+        res.send('Error, wrong validation token');
+    }
+});
+
+app.post('/webhook/', function (req, res) {
+    try {
+        var data = JSONbig.parse(req.body);
+
+        var messaging_events = data.entry[0].messaging;
+        for (var i = 0; i < messaging_events.length; i++) {
+            var event = data.entry[0].messaging[i];
+            processEvent(event);
+        }
+        return res.status(200).json({
+            status: "ok"
+        });
+    } catch (err) {
+        return res.status(400).json({
+            status: "error",
+            error: err
+        });
+    }
+
+});
+
+app.listen(REST_PORT, function () {
+    console.log('Rest service ready on port ' + REST_PORT);
+});
+
+doSubscribeRequest();nction (req, res) {
     if (req.query['hub.verify_token'] == FB_VERIFY_TOKEN) {
         res.send(req.query['hub.challenge']);
         
