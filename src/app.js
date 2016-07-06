@@ -52,8 +52,14 @@ function processEvent(event) {
                     } else {
                         responseData.facebook.forEach(function(facebookMessage) {
                             try {
+                                if (facebookMessage.sender_action) {
+                                    console.log('Response as sender action');
+                                    sendFBSenderAction(sender, facebookMessage.sender_action);
+                                }
+                                else {
                                     console.log('Response as formatted message');
                                     sendFBMessage(sender, facebookMessage);
+                                }
                             } catch (err) {
                                 sendFBMessage(sender, {text: err.message });
                             }                        
