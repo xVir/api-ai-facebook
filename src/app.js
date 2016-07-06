@@ -150,7 +150,25 @@ function sendFBMessage(sender, messageData, callback) {
 }
 
 function sendFBSenderAction(sender, action, callback) {
+    request({
+        url: 'https://graph.facebook.com/v2.6/me/messages',
+        qs: {access_token: FB_PAGE_ACCESS_TOKEN},
+        method: 'POST',
+        json: {
+            recipient: {id: sender},
+            sender_action: action
+        }
+    }, function (error, response, body) {
+        if (error) {
+            console.log('Error sending message: ', error);
+        } else if (response.body.error) {
+            console.log('Error: ', response.body.error);
+        }
 
+        if (callback) {
+            callback();
+        }
+    });
 }
 
 function doSubscribeRequest() {
