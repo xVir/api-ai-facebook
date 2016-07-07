@@ -150,11 +150,11 @@ function sendFBMessage(sender, messageData, callback) {
 }
 
 function sendFBSenderAction(sender, action, callback) {
-    var jsonfoo = {
+    var obj = {
             recipient: {id: sender},
             sender_action: action
         };
-    console.log('foo:' + jsonfoo);
+    console.log('foo:' + JSON.stringify(obj));
     request({
         url: 'https://graph.facebook.com/v2.6/me/messages',
         qs: {access_token: FB_PAGE_ACCESS_TOKEN},
