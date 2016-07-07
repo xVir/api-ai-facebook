@@ -168,6 +168,9 @@ function sendFBSenderAction(sender, action, callback) {
             console.log('Error sending action: ', error);
         } else if (response.body.error) {
             console.log('Error: ', response.body.error);
+        } else {
+            console.log(JSON.stringify(response));
+            console.log(JSON.stringify(body));
         }
 
         if (callback) {
