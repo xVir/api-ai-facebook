@@ -42,15 +42,15 @@ function processEvent(event) {
                 let action = response.result.action;
 
                 if (isDefined(responseData) && isDefined(responseData.facebook)) {
-                    if(!Array.isArray(responseData.facebook)) {
+                    if (!Array.isArray(responseData.facebook)) {
                         try {
                             console.log('Response as formatted message');
                             sendFBMessage(sender, responseData.facebook);
                         } catch (err) {
-                            sendFBMessage(sender, {text: err.message });
+                            sendFBMessage(sender, {text: err.message});
                         }
                     } else {
-                        responseData.facebook.forEach(function(facebookMessage) {
+                        responseData.facebook.forEach((facebookMessage) => {
                             try {
                                 if (facebookMessage.sender_action) {
                                     console.log('Response as sender action');
@@ -61,8 +61,8 @@ function processEvent(event) {
                                     sendFBMessage(sender, facebookMessage);
                                 }
                             } catch (err) {
-                                sendFBMessage(sender, {text: err.message });
-                            }                        
+                                sendFBMessage(sender, {text: err.message});
+                            }
                         });
                     }
                 } else if (isDefined(responseText)) {
@@ -85,42 +85,35 @@ function processEvent(event) {
 }
 
 function splitResponse(str) {
-    if (str.length <= 320)
-    {
+    if (str.length <= 320) {
         return [str];
     }
 
-    var result = chunkString(str, 300);
-
-    return result;
-
+    return chunkString(str, 300);
 }
 
-function chunkString(s, len)
-{
+function chunkString(s, len) {
     var curr = len, prev = 0;
 
     var output = [];
 
-    while(s[curr]) {
-        if(s[curr++] == ' ') {
-            output.push(s.substring(prev,curr));
+    while (s[curr]) {
+        if (s[curr++] == ' ') {
+            output.push(s.substring(prev, curr));
             prev = curr;
             curr += len;
         }
-        else
-        {
+        else {
             var currReverse = curr;
             do {
-                if(s.substring(currReverse - 1, currReverse) == ' ')
-                {
-                    output.push(s.substring(prev,currReverse));
+                if (s.substring(currReverse - 1, currReverse) == ' ') {
+                    output.push(s.substring(prev, currReverse));
                     prev = currReverse;
                     curr = currReverse + len;
                     break;
                 }
                 currReverse--;
-            } while(currReverse > prev)
+            } while (currReverse > prev)
         }
     }
     output.push(s.substr(prev));
@@ -136,7 +129,7 @@ function sendFBMessage(sender, messageData, callback) {
             recipient: {id: sender},
             message: messageData
         }
-    }, function (error, response, body) {
+    }, (error, response, body) => {
         if (error) {
             console.log('Error sending message: ', error);
         } else if (response.body.error) {
@@ -150,11 +143,7 @@ function sendFBMessage(sender, messageData, callback) {
 }
 
 function sendFBSenderAction(sender, action, callback) {
-    var obj = {
-            recipient: {id: sender},
-            sender_action: action
-        };
-    setTimeout(function() {
+    setTimeout(() => {
         request({
             url: 'https://graph.facebook.com/v2.6/me/messages',
             qs: {access_token: FB_PAGE_ACCESS_TOKEN},
@@ -163,7 +152,7 @@ function sendFBSenderAction(sender, action, callback) {
                 recipient: {id: sender},
                 sender_action: action
             }
-        }, function (error, response, body) {
+        }, (error, response, body) => {
             if (error) {
                 console.log('Error sending action: ', error);
             } else if (response.body.error) {
@@ -181,7 +170,7 @@ function doSubscribeRequest() {
             method: 'POST',
             uri: "https://graph.facebook.com/v2.6/me/subscribed_apps?access_token=" + FB_PAGE_ACCESS_TOKEN
         },
-        function (error, response, body) {
+        (error, response, body) => {
             if (error) {
                 console.error('Error while subscription: ', error);
             } else {
@@ -204,13 +193,13 @@ function isDefined(obj) {
 
 const app = express();
 
-app.use(bodyParser.text({ type: 'application/json' }));
+app.use(bodyParser.text({type: 'application/json'}));
 
-app.get('/webhook/', function (req, res) {
+app.get('/webhook/', (req, res) => {
     if (req.query['hub.verify_token'] == FB_VERIFY_TOKEN) {
         res.send(req.query['hub.challenge']);
-        
-        setTimeout(function () {
+
+        setTimeout(() => {
             doSubscribeRequest();
         }, 3000);
     } else {
@@ -218,7 +207,7 @@ app.get('/webhook/', function (req, res) {
     }
 });
 
-app.post('/webhook/', function (req, res) {
+app.post('/webhook/', (req, res) => {
     try {
         var data = JSONbig.parse(req.body);
 
@@ -239,7 +228,7 @@ app.post('/webhook/', function (req, res) {
 
 });
 
-app.listen(REST_PORT, function () {
+app.listen(REST_PORT, () => {
     console.log('Rest service ready on port ' + REST_PORT);
 });
 
