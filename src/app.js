@@ -20,8 +20,8 @@ const sessionIds = new Map();
 function processEvent(event) {
     var sender = event.sender.id.toString();
 
-    if (event.message && event.message.text) {
-        var text = event.message.text;
+    if ((event.message && event.message.text) || (event.postback && event.postback.payload)) {
+        var text = event.message ? event.message.text : event.postback.payload;
         // Handle a text message from this sender
 
         if (!sessionIds.has(sender)) {
@@ -42,11 +42,28 @@ function processEvent(event) {
                 let action = response.result.action;
 
                 if (isDefined(responseData) && isDefined(responseData.facebook)) {
-                    try {
-                        console.log('Response as formatted message');
-                        sendFBMessage(sender, responseData.facebook);
-                    } catch (err) {
-                        sendFBMessage(sender, {text: err.message });
+                    if(!Array.isArray(responseData.facebook)) {
+                        try {
+                            console.log('Response as formatted message');
+                            sendFBMessage(sender, responseData.facebook);
+                        } catch (err) {
+                            sendFBMessage(sender, {text: err.message });
+                        }
+                    } else {
+                        responseData.facebook.forEach(function(facebookMessage) {
+                            try {
+                                if (facebookMessage.sender_action) {
+                                    console.log('Response as sender action');
+                                    sendFBSenderAction(sender, facebookMessage.sender_action);
+                                }
+                                else {
+                                    console.log('Response as formatted message');
+                                    sendFBMessage(sender, facebookMessage);
+                                }
+                            } catch (err) {
+                                sendFBMessage(sender, {text: err.message });
+                            }                        
+                        });
                     }
                 } else if (isDefined(responseText)) {
                     console.log('Response as text message');
@@ -130,6 +147,33 @@ function sendFBMessage(sender, messageData, callback) {
             callback();
         }
     });
+}
+
+function sendFBSenderAction(sender, action, callback) {
+    var obj = {
+            recipient: {id: sender},
+            sender_action: action
+        };
+    setTimeout(function() {
+        request({
+            url: 'https://graph.facebook.com/v2.6/me/messages',
+            qs: {access_token: FB_PAGE_ACCESS_TOKEN},
+            method: 'POST',
+            json: {
+                recipient: {id: sender},
+                sender_action: action
+            }
+        }, function (error, response, body) {
+            if (error) {
+                console.log('Error sending action: ', error);
+            } else if (response.body.error) {
+                console.log('Error: ', response.body.error);
+            }
+            if (callback) {
+                callback();
+            }
+        });
+    }, 1000);
 }
 
 function doSubscribeRequest() {
