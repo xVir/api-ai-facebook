@@ -211,11 +211,21 @@ app.post('/webhook/', (req, res) => {
     try {
         var data = JSONbig.parse(req.body);
 
-        var messaging_events = data.entry[0].messaging;
-        for (var i = 0; i < messaging_events.length; i++) {
-            var event = data.entry[0].messaging[i];
-            processEvent(event);
+        if (data.entry) {
+            let entries = data.entry;
+            entries.forEach((entry) => {
+                let messaging_events = entry.messaging;
+                if (messaging_events) {
+                    messaging_events.forEach((event) => {
+                        if (event.message && !event.message.is_echo ||
+                            event.postback && event.postback.payload) {
+                            processEvent(event);
+                        }
+                    });
+                }
+            });
         }
+
         return res.status(200).json({
             status: "ok"
         });
