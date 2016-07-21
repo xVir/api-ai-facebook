@@ -68,7 +68,7 @@ function processEvent(event) {
                 } else if (isDefined(responseText)) {
                     console.log('Response as text message');
                     // facebook API limit for text length is 320,
-                    // so we split message if needed
+                    // so we must split message if needed
                     var splittedText = splitResponse(responseText);
 
                     async.eachSeries(splittedText, (textPart, callback) => {
