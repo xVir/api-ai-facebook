@@ -1,4 +1,4 @@
-FROM node:5.10
+FROM node:6
 
 MAINTAINER xVir <danil.skachkov@speaktoit.com>
 
