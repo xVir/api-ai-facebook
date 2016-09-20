@@ -1,4 +1,6 @@
 # api-ai-facebook
+[![](https://images.microbadger.com/badges/image/xvir/api-ai-facebook.svg)](https://microbadger.com/images/xvir/api-ai-facebook "Get your own image badge on microbadger.com")
+
 Facebook bot sources for Api.ai integration
 
 ## Deploy with Heroku
